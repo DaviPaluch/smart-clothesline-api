@@ -1,0 +1,59 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Clothesline {
+  id         String            @id @default(uuid())
+  name       String
+  status     ClotheslineStatus
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  actionsLog ActionsLog[]
+}
+
+model ActionsLog {
+  id            String       @id @default(uuid())
+  clothesline   Clothesline  @relation(fields: [clotheslineId], references: [id])
+  clotheslineId String
+  actionType    ActionType
+  actionOrigin  ActionOrigin
+  humidity      Float?
+  createdAt     DateTime     @default(now())
+}
+
+model AuditLog {
+  id        String      @id @default(uuid())
+  tableName String
+  recordId  String?
+  action    AuditAction
+  oldData   Json?
+  newData   Json?
+  createdAt DateTime    @default(now())
+}
+
+enum ClotheslineStatus {
+  OPEN
+  CLOSED
+}
+
+enum ActionType {
+  OPEN
+  CLOSE
+}
+
+enum ActionOrigin {
+  USER
+  ARDUINO
+  SYSTEM
+}
+
+enum AuditAction {
+  INSERT
+  UPDATE
+  DELETE
+}
