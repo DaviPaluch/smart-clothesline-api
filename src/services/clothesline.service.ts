@@ -87,16 +87,14 @@ export class ClotheslineService {
     return { message: 'Clothesline deleted successfully' };
   }
 
-  async executeAction(id: string, actionData: ClotheslineAction) {
+  async executeOpenAction(id: string) {
     const clothesline = await this.findById(id);
     
     if (!clothesline) {
       throw new Error('Clothesline not found');
     }
 
-    const newStatus = actionData.action === 'OPEN' 
-      ? ClotheslineStatus.OPEN 
-      : ClotheslineStatus.CLOSED;
+    const newStatus = ClotheslineStatus.OPEN 
 
     // Update clothesline status
     const updatedClothesline = await this.update(id, { status: newStatus });
@@ -104,16 +102,43 @@ export class ClotheslineService {
     // Log the action
     await actionsLogService.create({
       clotheslineId: id,
-      actionType: actionData.action as ActionType,
-      actionOrigin: actionData.origin,
-      humidity: actionData.humidity,
+      actionType: 'OPEN',
+      actionOrigin: 'USER',
+      humidity: undefined,
     });
 
     return {
       clothesline: updatedClothesline,
-      message: `Clothesline ${actionData.action.toLowerCase()}ed successfully`,
+      message: `Clothesline opened successfully`,
     };
   }
+
+  async executeCloseAction(id: string) {
+  const clothesline = await this.findById(id);
+
+  if (!clothesline) {
+    throw new Error('Clothesline not found');
+  }
+
+  const newStatus = ClotheslineStatus.CLOSED;
+
+  // Update clothesline status
+  const updatedClothesline = await this.update(id, { status: newStatus });
+
+  // Log the action
+  await actionsLogService.create({
+    clotheslineId: id,
+    actionType: 'CLOSE',
+    actionOrigin: 'USER',
+    humidity: undefined,
+  });
+
+  return {
+    clothesline: updatedClothesline,
+    message: `Clothesline closed successfully`,
+  };
+  }
+
 
   async getStatus(id: string) {
     const clothesline = await this.findById(id);

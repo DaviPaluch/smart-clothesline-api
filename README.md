@@ -1,167 +1,215 @@
-export const README_CONTENT = `
-# 🏠 Varal Inteligente API
+# 🧺 Varal Automático com Controle via MQTT
 
-Sistema automatizado para controle de varal que se abre e fecha baseado na umidade do ar.
+Este projeto implementa um **sistema de varal automático** controlado por um **Arduino** conectado a um **servidor Node.js**, utilizando o protocolo **MQTT** para comunicação.  
+O objetivo é permitir que o varal **abra ou feche automaticamente**, conforme comandos enviados pelo backend, podendo futuramente ser integrado a sensores de chuva ou aplicativos web.
 
-## ⚡ Funcionalidades
+---
 
-- 🎯 Controle automático baseado na umidade
-- 📱 Controle manual via API
-- 📊 Histórico de ações detalhado
-- 🔍 Sistema de auditoria
-- 📈 Estatísticas e relatórios
+## 🧩 Arquitetura do Sistema
 
-## 🚀 Tecnologias
+```
 
-- **Node.js** + **TypeScript**
-- **Express.js** - Framework web
-- **Prisma** - ORM
-- **PostgreSQL** - Banco de dados
-- **Zod** - Validação de schemas
+[ Node.js API ]  ⇄  [ Broker MQTT (Mosquitto) ]  ⇄  [ Arduino ]
+↑
+└── rotas REST (abrir/fechar)
 
-## 📋 Pré-requisitos
+```
 
-- Node.js >= 18
-- PostgreSQL
-- npm ou yarn
+- **Node.js (API Backend):** publica comandos MQTT (“abrir” ou “fechar”) no tópico `varal/acao`.
+- **Broker MQTT (Mosquitto):** atua como intermediário entre o backend e o Arduino.
+- **Arduino (ESP8266 / ESP32):** assina o tópico e executa a ação recebida, acionando o motor do varal.
 
-## 🔧 Instalação
+---
 
-\`\`\`bash
-# Clone o repositório
-git clone <repo-url>
-cd varal-inteligente-api
+## ⚙️ Tecnologias Utilizadas
 
-# Instale as dependências
+- [Node.js](https://nodejs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Express](https://expressjs.com/)
+- [MQTT.js](https://github.com/mqttjs/MQTT.js)
+- [Mosquitto MQTT Broker](https://mosquitto.org/)
+- [Arduino IDE](https://www.arduino.cc/en/software)
+- [ESP8266 ou ESP32](https://www.espressif.com/)
+
+---
+
+## 🚀 Funcionalidades
+
+- Controlar remotamente a abertura e fechamento do varal.
+- Comunicação leve e rápida via MQTT.
+- Código modular e escalável.
+- Pronto para futura integração com sensores (chuva, luminosidade, etc.).
+
+---
+
+## 📂 Estrutura do Projeto
+
+```
+
+project/
+├─ src/
+│  └─ server.ts          # API principal em TypeScript
+├─ dist/                 # Código compilado (gerado pelo TypeScript)
+├─ arduino/
+│  └─ varal.ino          # Código do Arduino (escuta o tópico MQTT)
+├─ package.json
+├─ tsconfig.json
+└─ README.md
+
+````
+
+---
+
+## 🔧 Instalação e Execução
+
+### 1️⃣ Instalar dependências
+
+```bash
 npm install
+````
 
-# Configure as variáveis de ambiente
-cp .env.example .env
+### 2️⃣ Compilar o projeto
 
-# Execute as migrações do banco
-npm run db:migrate
+```bash
+npx tsc
+```
 
-# Gere o cliente Prisma
-npm run db:generate
-\`\`\`
+### 3️⃣ Iniciar o servidor
 
-## 🏃‍♂️ Execução
+```bash
+node dist/server.js
+```
 
-\`\`\`bash
-# Desenvolvimento
-npm run dev
+Ou em modo de desenvolvimento:
 
-# Produção
-npm run build
-npm start
-\`\`\`
+```bash
+npx nodemon --exec ts-node src/server.ts
+```
 
-## 📡 Endpoints
+---
 
-### Varal
-- \`POST /api/clothesline\` - Criar varal
-- \`GET /api/clothesline/:id\` - Buscar varal
-- \`PUT /api/clothesline/:id\` - Atualizar varal
-- \`DELETE /api/clothesline/:id\` - Remover varal
-- \`POST /api/clothesline/:id/action\` - Executar ação (abrir/fechar)
-- \`GET /api/clothesline/:id/status\` - Status atual
+## 📡 Endpoints da API
 
-### Logs de Ações
-- \`GET /api/actions-log\` - Listar ações (com filtros e paginação)
-- \`POST /api/actions-log\` - Registrar ação (Arduino)
-- \`GET /api/actions-log/stats\` - Estatísticas
+| Método | Rota      | Descrição                      |
+| :----- | :-------- | :----------------------------- |
+| POST   | `/abrir`  | Envia comando MQTT para abrir  |
+| POST   | `/fechar` | Envia comando MQTT para fechar |
 
-### Auditoria
-- \`GET /api/audit-log\` - Logs de auditoria (com filtros e paginação)
+### Exemplo de uso via cURL:
 
-## 🔧 Scripts Úteis
+```bash
+curl -X POST http://localhost:3000/abrir
+curl -X POST http://localhost:3000/fechar
+```
 
-\`\`\`bash
-# Visualizar banco de dados
-npm run db:studio
+---
 
-# Reset do banco
-npx prisma migrate reset
+## 🤖 Código do Arduino (Exemplo)
 
-# Deploy das migrações
-npx prisma migrate deploy
-\`\`\`
+O Arduino escuta o tópico `varal/acao` e executa uma ação simples:
 
-## 📊 Estrutura do Projeto
+```cpp
+#include <WiFi.h>
+#include <PubSubClient.h>
 
-\`\`\`
-src/
-├── controllers/     # Controladores das rotas
-├── dtos/           # Data Transfer Objects
-├── lib/            # Configurações (Prisma, etc.)
-├── middleware/     # Middlewares da aplicação
-├── routes/         # Definição das rotas
-├── services/       # Lógica de negócio
-├── types/          # Tipos TypeScript
-├── utils/          # Utilitários
-└── server.ts       # Ponto de entrada da aplicação
-\`\`\`
+const char* ssid = "SEU_WIFI";
+const char* password = "SENHA_WIFI";
+const char* mqtt_server = "192.168.0.10"; // IP do servidor Node
 
-## 🤝 Arduino Integration
+WiFiClient espClient;
+PubSubClient client(espClient);
 
-### Enviar Comando para Arduino
-\`\`\`typescript
-// POST /api/clothesline/:id/action
-{
-  "action": "OPEN" | "CLOSE",
-  "origin": "USER" | "ARDUINO" | "SYSTEM",
-  "humidity": 65.5
+void callback(char* topic, byte* payload, unsigned int length) {
+  String mensagem;
+  for (int i = 0; i < length; i++) {
+    mensagem += (char)payload[i];
+  }
+
+  Serial.print("Mensagem recebida: ");
+  Serial.println(mensagem);
+
+  if (mensagem == "abrir") {
+    Serial.println("🔓 Varal abrindo...");
+    // lógica para acionar motor
+  } else if (mensagem == "fechar") {
+    Serial.println("🔒 Varal fechando...");
+    // lógica para acionar motor
+  }
 }
-\`\`\`
 
-### Arduino Reportar Evento
-\`\`\`typescript
-// POST /api/actions-log
-{
-  "clotheslineId": "uuid",
-  "actionType": "OPEN" | "CLOSE",
-  "actionOrigin": "ARDUINO",
-  "humidity": 85.2
+void setup_wifi() {
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi conectado!");
 }
-\`\`\`
 
-## 📈 Monitoramento
+void reconnect() {
+  while (!client.connected()) {
+    if (client.connect("VaralClient")) {
+      client.subscribe("varal/acao");
+    } else {
+      delay(5000);
+    }
+  }
+}
 
-- Health check: \`GET /health\`
-- Logs estruturados com Prisma
-- Rate limiting configurado
-- Validação robusta com Zod
+void setup() {
+  Serial.begin(115200);
+  setup_wifi();
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(callback);
+}
 
-## 🔒 Segurança
+void loop() {
+  if (!client.connected()) reconnect();
+  client.loop();
+}
+```
 
-- Helmet.js para headers de segurança
-- Rate limiting por IP
-- Validação rigorosa de entrada
-- CORS configurado
-- Compressão gzip
+---
 
-## 🚀 Deploy
+## 🧠 Futuras Implementações
 
-### Docker (Recomendado)
+* Integração com **sensor de chuva** (abrir/fechar automaticamente).
+* Interface Web para controle remoto.
+* Histórico de acionamentos.
+* Controle via assistente de voz (Google Home / Alexa).
 
-\`\`\`dockerfile
-FROM node:18-alpine
+---
 
-WORKDIR /app
+## 🛠️ Requisitos
 
-COPY package*.json ./
-RUN npm ci --only=production
+* Node.js ≥ 18
+* Mosquitto instalado localmente
+* Arduino com suporte a Wi-Fi (ESP8266 / ESP32)
 
-COPY . .
-RUN npm run build
+---
 
-EXPOSE 3000
+## 📜 Licença
 
-CMD ["npm", "start"]
-\`\`\`
+Este projeto é distribuído sob a licença MIT.
+Sinta-se livre para usar, modificar e compartilhar.
 
-### Variáveis de Ambiente
-- \`DATABASE_URL\` - String de conexão PostgreSQL
-- \`PORT\` - Porta da aplicação (padrão: 3000)
-- \`NODE_ENV\` - Ambiente (development/production)
-`;
+---
+
+## 👨‍💻 Autor
+
+**Seu Nome**
+Desenvolvedor do projeto de automação residencial “Varal Inteligente”.
+
+---
+
+### 💡 Dica
+
+Para testar rapidamente o fluxo:
+
+1. Inicie o Mosquitto com `mosquitto -v`
+2. Rode o servidor Node.js (`npm run dev`)
+3. Abra o Serial Monitor do Arduino
+4. Envie `POST /abrir` e `POST /fechar`
+   → o Arduino exibirá os comandos recebidos
+
+---
