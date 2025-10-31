@@ -1,12 +1,12 @@
-import { prisma } from '../lib/prisma';
+import { prisma } from '../infra/prisma';
 import { auditService } from './audit.service';
 import { actionsLogService } from './actions-log.service';
 import { 
   CreateClotheslineData, 
-  UpdateClotheslineData,
-  ClotheslineAction 
+  UpdateClotheslineData, 
 } from '../dtos/clothesline.dto';
 import { ClotheslineStatus, ActionType } from '@prisma/client';
+import client from '../infra/mqtt';
 
 export class ClotheslineService {
   async create(data: CreateClotheslineData) {
@@ -94,10 +94,19 @@ export class ClotheslineService {
       throw new Error('Clothesline not found');
     }
 
-    const newStatus = ClotheslineStatus.OPEN 
+    const newStatus = ActionType.OPEN 
+
+    client.publish('clothesline', newStatus, { qos: 1 }, (err) => {
+      if (err) {
+        console.error('Erro ao publicar:', err.message);
+        throw new Error('Message not sent');
+      } else {
+        console.log(`📡 Mensagem publicada: ${newStatus}`);
+      }
+    });
 
     // Update clothesline status
-    const updatedClothesline = await this.update(id, { status: newStatus });
+    const updatedClothesline = await this.update(id, { status: newStatus }); // TODO: it may return from Arduino
 
     // Log the action
     await actionsLogService.create({
@@ -114,30 +123,40 @@ export class ClotheslineService {
   }
 
   async executeCloseAction(id: string) {
-  const clothesline = await this.findById(id);
+    const clothesline = await this.findById(id);
 
-  if (!clothesline) {
-    throw new Error('Clothesline not found');
+    if (!clothesline) {
+      throw new Error('Clothesline not found');
+    }
+
+    const newStatus = ClotheslineStatus.CLOSED;
+
+    client.publish('clothesline', newStatus, { qos: 1 }, (err) => {
+      if (err) {
+        console.error('Erro ao publicar:', err.message);
+        throw new Error('Message not sent');
+      } else {
+        console.log(`📡 Mensagem publicada: ${newStatus}`);
+      }
+    });
+
+    // Update clothesline status
+    const updatedClothesline = await this.update(id, { status: newStatus }); // TODO: it may return from Arduino
+
+    // Log the action
+    await actionsLogService.create({
+      clotheslineId: id,
+      actionType: 'CLOSE',
+      actionOrigin: 'USER',
+      humidity: undefined,
+    });
+
+    return {
+      clothesline: updatedClothesline,
+      message: `Clothesline closed successfully`,
+    };
   }
 
-  const newStatus = ClotheslineStatus.CLOSED;
-
-  // Update clothesline status
-  const updatedClothesline = await this.update(id, { status: newStatus });
-
-  // Log the action
-  await actionsLogService.create({
-    clotheslineId: id,
-    actionType: 'CLOSE',
-    actionOrigin: 'USER',
-    humidity: undefined,
-  });
-
-  return {
-    clothesline: updatedClothesline,
-    message: `Clothesline closed successfully`,
-  };
-  }
 
 
   async getStatus(id: string) {

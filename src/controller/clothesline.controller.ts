@@ -43,9 +43,18 @@ export class ClotheslineController {
     }
   }
 
-  async executeAction(req: Request, res: Response, next: NextFunction) {
+  async executeOpenAction(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await clotheslineService.executeAction(req.params.id, req.body);
+      const result = await clotheslineService.executeOpenAction(req.params.id);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async executeCloseAction(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await clotheslineService.executeCloseAction(req.params.id);
       res.json(result);
     } catch (error) {
       next(error);

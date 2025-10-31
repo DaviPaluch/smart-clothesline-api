@@ -38,14 +38,14 @@ router.delete('/:id',
 // POST /api/clothesline/:id/action - Execute action (open/close)
 router.post('/:id/action/open',
   validateParams(ClotheslineParamsDto),
-  validateBody(ClotheslineActionDto),
-  clotheslineController.executeAction
+  // validateBody(ClotheslineActionDto),
+  clotheslineController.executeOpenAction
 );
 
 router.post('/:id/action/close',
   validateParams(ClotheslineParamsDto),
-  validateBody(ClotheslineActionDto),
-  clotheslineController.executeAction
+  // validateBody(ClotheslineActionDto),
+  clotheslineController.executeCloseAction
 );
 
 // GET /api/clothesline/:id/status - Get status

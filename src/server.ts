@@ -7,7 +7,7 @@ import { clotheslineRoutes } from './routes/clothesline.routes';
 import { actionsLogRoutes } from './routes/actions-log.routes';
 import { auditLogRoutes } from './routes/audit-log.routes';
 import { errorHandler } from './middleware/error-handler';
-import { prisma } from './lib/prisma';
+import { prisma } from './infra/prisma';
 
 const app = express();
 const PORT = process.env.PORT || 3000;

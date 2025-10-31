@@ -1,4 +1,4 @@
-import { prisma } from './lib/prisma';
+import { prisma } from './infra/prisma';
 
 async function seed() {
   console.log('🌱 Starting seed...');

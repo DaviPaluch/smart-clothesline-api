@@ -1,4 +1,4 @@
-  import { prisma } from '../lib/prisma';
+  import { prisma } from '../infra/prisma';
 import { PaginationParams, PaginatedResponse } from '../types/api';
 import { 
   CreateActionsLogData, 

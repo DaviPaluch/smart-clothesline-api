@@ -128,10 +128,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Mensagem recebida: ");
   Serial.println(mensagem);
 
-  if (mensagem == "abrir") {
+  if (mensagem == "OPEN") {
     Serial.println("🔓 Varal abrindo...");
     // lógica para acionar motor
-  } else if (mensagem == "fechar") {
+  } else if (mensagem == "CLOSE") {
     Serial.println("🔒 Varal fechando...");
     // lógica para acionar motor
   }
@@ -149,7 +149,7 @@ void setup_wifi() {
 void reconnect() {
   while (!client.connected()) {
     if (client.connect("VaralClient")) {
-      client.subscribe("varal/acao");
+      client.subscribe("clothesline");
     } else {
       delay(5000);
     }

@@ -1,4 +1,4 @@
-import { prisma } from '../lib/prisma';
+import { prisma } from '../infra/prisma';
 import { PaginationParams, PaginatedResponse } from '../types/api';
 import { CreateAuditLogData, AuditLogFilters } from '../dtos/audit-log.dto';
 import { AuditLog } from '@prisma/client';
