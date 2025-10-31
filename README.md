@@ -197,7 +197,7 @@ Sinta-se livre para usar, modificar e compartilhar.
 
 ## 👨‍💻 Autor
 
-**Seu Nome**
+**Davi Paluch**
 Desenvolvedor do projeto de automação residencial “Varal Inteligente”.
 
 ---
