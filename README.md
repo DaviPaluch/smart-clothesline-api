@@ -207,9 +207,9 @@ Desenvolvedor do projeto de automação residencial “Varal Inteligente”.
 Para testar rapidamente o fluxo:
 
 1. Inicie o Mosquitto com `mosquitto -v`
-2. Rode o servidor Node.js (`npm run dev`)
+2. Rode o servidor Node.js (`yarn dev`)
 3. Abra o Serial Monitor do Arduino
-4. Envie `POST /abrir` e `POST /fechar`
+4. Envie `POST http://localhost:3000/api/clothesline/:id/action/open` e `POST http://localhost:3000/api/clothesline/:id/action/close`
    → o Arduino exibirá os comandos recebidos
 
 ---
