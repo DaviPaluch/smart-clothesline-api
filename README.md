@@ -92,14 +92,14 @@ yarn dev
 
 | Método | Rota      | Descrição                      |
 | :----- | :-------- | :----------------------------- |
-| POST   | `/abrir`  | Envia comando MQTT para abrir  |
-| POST   | `/fechar` | Envia comando MQTT para fechar |
+| POST   | `/api/clothesline/:id/action/open`  | Envia comando MQTT para abrir  |
+| POST   | `/api/clothesline/:id/action/close` | Envia comando MQTT para fechar |
 
 ### Exemplo de uso via cURL:
 
 ```bash
-curl -X POST http://localhost:3000/abrir
-curl -X POST http://localhost:3000/fechar
+curl -X POST http://localhost:3000/api/clothesline/:id/action/open
+curl -X POST http://localhost:3000/api/clothesline/:id/action/close
 ```
 
 ---
