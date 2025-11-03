@@ -65,25 +65,25 @@ project/
 ### 1️⃣ Instalar dependências
 
 ```bash
-npm install
+yarn
 ````
 
 ### 2️⃣ Compilar o projeto
 
 ```bash
-npx tsc
+yarn build
 ```
 
 ### 3️⃣ Iniciar o servidor
 
 ```bash
-node dist/server.js
+yarn start
 ```
 
 Ou em modo de desenvolvimento:
 
 ```bash
-npx nodemon --exec ts-node src/server.ts
+yarn dev
 ```
 
 ---

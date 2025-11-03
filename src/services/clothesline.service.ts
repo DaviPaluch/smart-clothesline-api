@@ -30,12 +30,12 @@ export class ClotheslineService {
   async findById(id: string) {
     return prisma.clothesline.findUnique({
       where: { id },
-      include: {
-        actionsLog: {
-          orderBy: { createdAt: 'desc' },
-          take: 5,
-        },
-      },
+      // include: {
+      //   actionsLog: {
+      //     orderBy: { createdAt: 'desc' },
+      //     take: 5,
+      //   },
+      // },
     });
   }
 
@@ -170,7 +170,6 @@ export class ClotheslineService {
       id: clothesline.id,
       name: clothesline.name,
       status: clothesline.status,
-      lastActions: clothesline.actionsLog,
     };
   }
 }
