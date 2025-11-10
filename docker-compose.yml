@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+  # === BANCO DE DADOS ===
   db:
     image: postgres:15
     restart: always
@@ -12,6 +13,46 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - varal_net
+
+  # === BROKER MQTT (MOSQUITTO) ===
+  mqtt:
+    image: eclipse-mosquitto:2
+    container_name: mqtt_broker
+    restart: always
+    ports:
+      - "1883:1883" # Porta padrão MQTT
+      - "9001:9001" # Porta WebSocket (opcional)
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    networks:
+      - varal_net
+
+  # === API NODE.JS ===
+  api:
+    build: .
+    container_name: varal_api
+    restart: always
+    depends_on:
+      - db
+      - mqtt
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://johndoe:randompassword@db:5432/mydb
+      MQTT_BROKER_URL: mqtt://mqtt:1883 # nome do serviço (não localhost)
+    networks:
+      - varal_net
+    command: yarn dev # ou yarn start, conforme preferir
 
 volumes:
   postgres_data:
+
+networks:
+  varal_net:
+    driver: bridge

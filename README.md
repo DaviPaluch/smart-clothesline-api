@@ -1,6 +1,6 @@
 # 🧺 Varal Automático com Controle via MQTT
 
-Este projeto implementa um **sistema de varal automático** controlado por um **Arduino** conectado a um **servidor Node.js**, utilizando o protocolo **MQTT** para comunicação.  
+Este projeto implementa um **sistema de varal automático** controlado por um **Arduino** conectado a um **servidor Node.js**, utilizando o protocolo **MQTT** para comunicação.
 O objetivo é permitir que o varal **abra ou feche automaticamente**, conforme comandos enviados pelo backend, podendo futuramente ser integrado a sensores de chuva ou aplicativos web.
 
 ---
@@ -8,55 +8,58 @@ O objetivo é permitir que o varal **abra ou feche automaticamente**, conforme c
 ## 🧩 Arquitetura do Sistema
 
 ```
-
 [ Node.js API ]  ⇄  [ Broker MQTT (Mosquitto) ]  ⇄  [ Arduino ]
 ↑
 └── rotas REST (abrir/fechar)
-
 ```
 
-- **Node.js (API Backend):** publica comandos MQTT (“abrir” ou “fechar”) no tópico `varal/acao`.
-- **Broker MQTT (Mosquitto):** atua como intermediário entre o backend e o Arduino.
-- **Arduino (ESP8266 / ESP32):** assina o tópico e executa a ação recebida, acionando o motor do varal.
+* **Node.js (API Backend):** publica comandos MQTT (“abrir” ou “fechar”) no tópico `varal/acao`.
+* **Broker MQTT (Mosquitto):** atua como intermediário entre o backend e o Arduino.
+* **Arduino (ESP8266 / ESP32):** assina o tópico e executa a ação recebida, acionando o motor do varal.
 
 ---
 
 ## ⚙️ Tecnologias Utilizadas
 
-- [Node.js](https://nodejs.org/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Express](https://expressjs.com/)
-- [MQTT.js](https://github.com/mqttjs/MQTT.js)
-- [Mosquitto MQTT Broker](https://mosquitto.org/)
-- [Arduino IDE](https://www.arduino.cc/en/software)
-- [ESP8266 ou ESP32](https://www.espressif.com/)
+* [Node.js](https://nodejs.org/)
+* [TypeScript](https://www.typescriptlang.org/)
+* [Express](https://expressjs.com/)
+* [MQTT.js](https://github.com/mqttjs/MQTT.js)
+* [Mosquitto MQTT Broker](https://mosquitto.org/)
+* [Prisma ORM](https://www.prisma.io/)
+* [Docker Compose](https://docs.docker.com/compose/)
+* [Arduino IDE](https://www.arduino.cc/en/software)
+* [ESP8266 ou ESP32](https://www.espressif.com/)
 
 ---
 
 ## 🚀 Funcionalidades
 
-- Controlar remotamente a abertura e fechamento do varal.
-- Comunicação leve e rápida via MQTT.
-- Código modular e escalável.
-- Pronto para futura integração com sensores (chuva, luminosidade, etc.).
+* Controlar remotamente a abertura e fechamento do varal.
+* Comunicação leve e rápida via MQTT.
+* Código modular e escalável.
+* Integração com banco de dados via Prisma.
+* Pronto para futura integração com sensores (chuva, luminosidade, etc.).
 
 ---
 
 ## 📂 Estrutura do Projeto
 
 ```
-
 project/
 ├─ src/
 │  └─ server.ts          # API principal em TypeScript
 ├─ dist/                 # Código compilado (gerado pelo TypeScript)
+├─ prisma/
+│  ├─ schema.prisma      # Definição do banco de dados
+│  └─ migrations/        # Migrations geradas automaticamente
 ├─ arduino/
 │  └─ varal.ino          # Código do Arduino (escuta o tópico MQTT)
+├─ docker-compose.yml    # Configuração dos containers
 ├─ package.json
 ├─ tsconfig.json
 └─ README.md
-
-````
+```
 
 ---
 
@@ -66,21 +69,50 @@ project/
 
 ```bash
 yarn
-````
+```
 
-### 2️⃣ Compilar o projeto
+### 2️⃣ Subir os containers com Docker
+
+Este comando inicia o **broker MQTT (Mosquitto)** e demais serviços necessários.
+
+```bash
+docker-compose up -d
+```
+
+### 3️⃣ Verificar se os containers estão rodando
+
+```bash
+docker ps
+```
+
+Você deve ver algo como:
+
+```
+CONTAINER ID   IMAGE                STATUS         PORTS
+a1b2c3d4e5f6   eclipse-mosquitto   Up 2 minutes   1883/tcp
+```
+
+### 4️⃣ Executar as migrations do Prisma
+
+```bash
+yarn prisma migrate dev
+```
+
+Isso criará ou atualizará o banco de dados conforme o schema definido.
+
+### 5️⃣ Compilar o projeto
 
 ```bash
 yarn build
 ```
 
-### 3️⃣ Iniciar o servidor
+### 6️⃣ Iniciar o servidor
 
 ```bash
 yarn start
 ```
 
-Ou em modo de desenvolvimento:
+Ou em modo de desenvolvimento (com watch):
 
 ```bash
 yarn dev
@@ -90,8 +122,8 @@ yarn dev
 
 ## 📡 Endpoints da API
 
-| Método | Rota      | Descrição                      |
-| :----- | :-------- | :----------------------------- |
+| Método | Rota                                | Descrição                      |
+| :----- | :---------------------------------- | :----------------------------- |
 | POST   | `/api/clothesline/:id/action/open`  | Envia comando MQTT para abrir  |
 | POST   | `/api/clothesline/:id/action/close` | Envia comando MQTT para fechar |
 
@@ -106,7 +138,7 @@ curl -X POST http://localhost:3000/api/clothesline/:id/action/close
 
 ## 🤖 Código do Arduino (Exemplo)
 
-O Arduino escuta o tópico `varal/acao` e executa uma ação simples:
+O Arduino escuta o tópico `clothesline` e executa uma ação simples:
 
 ```cpp
 #include <WiFi.h>
@@ -183,7 +215,8 @@ void loop() {
 ## 🛠️ Requisitos
 
 * Node.js ≥ 18
-* Mosquitto instalado localmente
+* Docker e Docker Compose
+* Mosquitto (configurado via container)
 * Arduino com suporte a Wi-Fi (ESP8266 / ESP32)
 
 ---
@@ -202,14 +235,20 @@ Desenvolvedor do projeto de automação residencial “Varal Inteligente”.
 
 ---
 
-### 💡 Dica
+### 💡 Dica Rápida de Teste
 
-Para testar rapidamente o fluxo:
+1. Inicie os containers: `docker-compose up -d`
+2. Verifique o status: `docker ps`
+3. Execute as migrations: `yarn prisma migrate dev`
+4. Rode o servidor: `yarn dev`
+5. Abra o Serial Monitor do Arduino
+6. Envie os comandos:
 
-1. Inicie o Mosquitto com `mosquitto -v`
-2. Rode o servidor Node.js (`yarn dev`)
-3. Abra o Serial Monitor do Arduino
-4. Envie `POST http://localhost:3000/api/clothesline/:id/action/open` e `POST http://localhost:3000/api/clothesline/:id/action/close`
-   → o Arduino exibirá os comandos recebidos
+```bash
+curl -X POST http://localhost:3000/api/clothesline/:id/action/open
+curl -X POST http://localhost:3000/api/clothesline/:id/action/close
+```
+
+➡ O Arduino exibirá os comandos recebidos no monitor serial.
 
 ---
