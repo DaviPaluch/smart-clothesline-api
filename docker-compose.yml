@@ -45,7 +45,7 @@ services:
       - .env
     environment:
       DATABASE_URL: postgres://johndoe:randompassword@db:5432/mydb
-      MQTT_BROKER_URL: mqtt://mqtt:1883 # nome do serviço (não localhost)
+      MQTT_BROKER_URL: mqtt://localhost:1883 #  mqtt://mqtt:1883 nome do serviço (não localhost)
     networks:
       - varal_net
     command: yarn dev # ou yarn start, conforme preferir
